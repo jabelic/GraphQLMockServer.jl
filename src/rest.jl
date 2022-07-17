@@ -49,21 +49,23 @@ end
 
 
 function parseInputs(arg::Dict)
-    query = haskey(arg, "query") ? arg["query"] : nothing
-    variables = haskey(arg, "variables") ? arg["variables"] : nothing
-    # println(parseQuery(query))
-    # println(variables)
-    parseQuery(query)
+    query = haskey(arg, "query") ? [arg["query"]] : nothing
+    variables = haskey(arg, "variables") ? [arg["variables"]] : nothing
+    queries = parseQuery(query)
+    println("queries", queries)
+    Dict("queries"=>queries)
 end
 
 # OptionsData
 function graphqlHTTP(args)
+    # argsはschema, resolverを持つ
     try
         body::Dict{String, Any} = Requests.jsonpayload()
-        println(args["resolver"])
-        results = resolveOptions(args["resolver"])
-        println("results:::", results)
-        return parseInputs(body)
+        println(body)
+        parsed_inputs = parseInputs(body)
+        # resolverはmessage
+        results = resolveOptions(args["resolver"], parsed_inputs["queries"])
+        return Dict("data"=>results)
     catch
         println("error")
     end    
@@ -75,12 +77,9 @@ route("/") do
 end
 
 route("/graphql", method = POST) do
-  message = jsonpayload()
-  println("入力: ", message)
-  println(_schema)
+#   message = jsonpayload()
   input = Dict("schema"=>_schema, "resolver"=>[quoteOfTheDay, random, rollThreeDice])
   graphqlHTTP(input) |> json
-#   (:echo => (message["message"] * " ") ^ message["repeat"]) |> json
 end
 
 """
