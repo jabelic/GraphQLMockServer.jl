@@ -57,7 +57,7 @@ function parseInputs(arg::Dict)
 end
 
 # OptionsData
-function graphqlHTTP(args)
+function graphqlHTTP(args::Dict)
     # argsはschema, resolverを持つ
     try
         body::Dict{String, Any} = Requests.jsonpayload()
@@ -81,12 +81,5 @@ route("/graphql", method = POST) do
   input = Dict("schema"=>_schema, "resolver"=>[quoteOfTheDay, random, rollThreeDice])
   graphqlHTTP(input) |> json
 end
-
-"""
-Dict{String,Any}("variables" => {
-    "dice": 3,
-   "sides": 6
-},"query" => "\nquery {\n    random\n    rollThreeDice\n    quoteOfTheDay\n}\n")
-"""
 
 Genie.startup()
