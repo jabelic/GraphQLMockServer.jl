@@ -1,12 +1,12 @@
 module GraphQLServer
-export graphqlHTTP, buildSchema
+export graphqlHTTP, buildSchema, graphqlApp, listen
 
     # server
-    # using Genie
-    # import Genie.Router: route
-    # import Genie.Renderer.Json: json
-    # using Genie.Requests
-    # Genie.config.run_as_server = true
+    using Genie
+    import Genie.Router: route
+    import Genie.Renderer.Json: json
+    using Genie.Requests
+    Genie.config.run_as_server = true
 
     
     using Parameters
@@ -62,6 +62,16 @@ export graphqlHTTP, buildSchema
         catch
             println("error")
         end    
+    end
+
+    function graphqlApp(input)
+        route(input["endpoint"], method = POST) do
+            graphqlHTTP(input) |> json
+        end
+    end
+
+    function listen()
+        Genie.startup()
     end
 
 end

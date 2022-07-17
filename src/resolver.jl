@@ -23,6 +23,7 @@ module Resolver
                 print("Error: ", func)
             end
         end
+        println("resolve::", results)
         results
     end
 
