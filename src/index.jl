@@ -11,7 +11,7 @@ using .Query: parseQuery
 include("./schema.jl")
 using .Schema: buildSchema
 include("./resolver.jl")
-using .Resolver: quoteOfTheDay, random, rollThreeDice, resolveOptions
+using .Resolver: resolveOptions
 
 
 _schema = buildSchema("""

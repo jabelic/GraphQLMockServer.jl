@@ -8,7 +8,6 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
     using Genie.Requests
     Genie.config.run_as_server = true
 
-    
     using Parameters
 
     include("./query.jl")
@@ -16,7 +15,7 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
     include("./schema.jl")
     using .Schema: buildSchema
     include("./resolver.jl")
-    using .Resolver: quoteOfTheDay, random, rollThreeDice, resolveOptions
+    using .Resolver: resolveOptions
 
 
     struct _Schema
@@ -33,7 +32,7 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
     end
 
     struct _Query
-        # ここは型職人...
+        # FIXME: parse
         field::String
     end
 
@@ -56,9 +55,8 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
         try
             body::Dict{String, Any} = Requests.jsonpayload()
             parsed_inputs = parseInputs(body)
-            # resolverはmessage
             results = resolveOptions(args["resolver"], parsed_inputs["queries"])
-            return Dict("data"=>results)
+            Dict("data"=>results)
         catch
             println("error")
         end    

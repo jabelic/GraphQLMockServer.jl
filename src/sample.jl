@@ -1,12 +1,10 @@
-using Genie
-import Genie.Router: route
-import Genie.Renderer.Json: json
-using Genie.Requests
-Genie.config.run_as_server = true
+# Sample Mock Server Usecases
+# これがこのライブラリを使用したmock serverのサンプルコードになります
 
 include("./GraphQLServer.jl")
-using .GraphQLServer: graphqlHTTP, buildSchema, graphqlApp, listen
+using .GraphQLServer: buildSchema, graphqlApp, listen
 
+# Resolver
 function quoteOfTheDay()
     rand() < 0.5 ? "Take it easy" : "Salvation lies within"
 end
@@ -24,7 +22,7 @@ function rollDice(args)
     output
 end
 
-
+# Define Schema
 _schema = buildSchema("""
   type Query {
     quoteOfTheDay: String
@@ -34,17 +32,9 @@ _schema = buildSchema("""
   }
 """);
 
-# route("/") do
-#   (:message => "Hi there!") |> json
-# end
- 
-# route("/graphql", method = POST) do
-#   input = Dict("schema"=>_schema, "resolver"=>[quoteOfTheDay, random, rollThreeDice])
-#   println(input)
-#   graphqlHTTP(input) |> json
-# end
-
-# Genie.startup()
 input = Dict("endpoint"=>"/graphql", "schema"=>_schema, "resolver"=>[quoteOfTheDay, random, rollThreeDice])
 graphqlApp(input)
+input2 = Dict("endpoint"=>"/", "schema"=>_schema, "resolver"=>[quoteOfTheDay, random, rollThreeDice])
+graphqlApp(input2)
+
 listen()

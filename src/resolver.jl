@@ -1,6 +1,6 @@
 module Resolver
     using Random
-    export quoteOfTheDay, random, rollThreeDice, resolveOptions
+    export resolveOptions
     function get_method_name(func)
         try
             return string(Symbol(func))
@@ -27,20 +27,4 @@ module Resolver
         results
     end
 
-    function quoteOfTheDay()
-        rand() < 0.5 ? "Take it easy" : "Salvation lies within"
-    end
-    function random()
-        rand()
-    end
-    function rollThreeDice()
-        map(x -> 1 + floor(rand() * 6), [1 2 3])
-    end
-    function rollDice(args)
-        output = []
-        for i = 0:args.numDice
-            append!(output, 1 + floor(rand() * (args.numSides || 6)))
-        end
-        output
-    end
 end
