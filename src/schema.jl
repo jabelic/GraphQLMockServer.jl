@@ -1,11 +1,6 @@
 module Schema
 export buildSchema, get_field_type
 
-    # struct _AST
-    #     type::Dict
-    # end
-    # function get_field_and_type(arg)
-    # end
     function parse(arg::String)
         nodes = split(arg)
         ast = Dict{Any, Any}()
@@ -20,8 +15,6 @@ export buildSchema, get_field_type
                 ast["type"] = nothing
             elseif !modeSchema && node == "Query" && isType
                 isType = false
-                # tmp = []
-                # tmp = append!(tmp, Dict("Query"=>Dict()))
                 ast["type"] = Dict{String, Any}("queries"=>nothing)
                 ast["type"]["queries"] = Dict{String, Any}("Query"=>[])
             # elseif Query以外のtypeの入力
