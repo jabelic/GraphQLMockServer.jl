@@ -13,7 +13,7 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
     include("./query.jl")
     using .Query: parseQuery
     include("./schema.jl")
-    using .Schema: buildSchema
+    using .Schema: buildSchema, get_field_type
     include("./resolver.jl")
     using .Resolver: resolveOptions
 
@@ -55,7 +55,9 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
         try
             body::Dict{String, Any} = Requests.jsonpayload()
             parsed_inputs = parseInputs(body)
-            results = resolveOptions(args["resolver"], parsed_inputs["queries"])
+            # println("schema AST is : ", args["schema"])
+            field_type = get_field_type(args["schema"])
+            results = resolveOptions(args["resolver"], parsed_inputs["queries"], field_type)
             Dict("data"=>results)
         catch
             println("error")

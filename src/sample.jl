@@ -28,9 +28,9 @@ _schema = buildSchema("""
     quoteOfTheDay: String
     random: Float!
     rollThreeDice: [Int]
-    rollDice(numDice: Int!, numSides: Int): [Int]
   }
 """);
+# rollDice(numDice: Int!, numSides: Int): [Int]
 
 input = Dict("endpoint"=>"/graphql", "schema"=>_schema, "resolver"=>[quoteOfTheDay, random, rollThreeDice])
 graphqlApp(input)
