@@ -12,12 +12,12 @@ function random()
     rand()
 end
 function rollThreeDice()
-    map(x -> 1 + floor(rand() * 6), [1 2 3])
+    map(x -> Int(1 + floor(rand() * 6)), [1 2 3])
 end
 function rollDice(args)
     output = []
     for i = 0:args.numDice
-        append!(output, 1 + floor(rand() * (args.numSides || 6)))
+        append!(output, Int(1 + floor(rand() * (args.numSides || 6))))
     end
     output
 end
