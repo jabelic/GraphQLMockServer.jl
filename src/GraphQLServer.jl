@@ -55,7 +55,6 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
         try
             body::Dict{String, Any} = Requests.jsonpayload()
             parsed_inputs = parseInputs(body)
-            # println("schema AST is : ", args["schema"])
             field_type = get_field_type(args["schema"])
             results = resolveOptions(args["resolver"], parsed_inputs["queries"], field_type)
             Dict("data"=>results)

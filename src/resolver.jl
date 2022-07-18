@@ -63,6 +63,7 @@ module Resolver
         # queriesは欲しいfieldがstringのArrayとして渡ってくる
         # field_typeはSchemaから情報を取得
         
+        # 本来は逆かも. 今はresolverを回しているけど, schemaの方をforで回した方がいいかも
         func_names = map(x->x.first, field_type)
         results = Dict()
         for func in resolvers

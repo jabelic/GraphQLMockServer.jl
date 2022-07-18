@@ -1,7 +1,7 @@
 # Sample Mock Server Usecases
 # これがこのライブラリを使用したmock serverのサンプルコードになります
 
-include("./GraphQLServer.jl")
+include("./src/GraphQLServer.jl")
 using .GraphQLServer: buildSchema, graphqlApp, listen
 
 # Resolver
