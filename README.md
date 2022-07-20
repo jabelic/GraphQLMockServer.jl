@@ -10,4 +10,4 @@
 
 # Run sample server
 
-`$ julia -JSysimage.so src/sample.jl -t auto`
+`$ julia -JSysimage.so sample.jl -t auto`
