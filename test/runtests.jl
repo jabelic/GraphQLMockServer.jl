@@ -10,7 +10,7 @@ include("../src/resolver.jl")
 using .Resolver: resolveOptions, get_index
     
 schema_case = """
-  type Query {
+  type Query{
     quoteOfTheDay: String
     random: Float!
     rollThreeDice: [Int]
@@ -21,6 +21,13 @@ schema_case2 = """
     id: ID!
     firstName: String
     lastName: String
+    love{
+        food
+        color
+    }
+    hoge(id:ID!): {
+        name
+    }
   }
 """
 
@@ -32,7 +39,7 @@ query {
 }
 """)
 
-
+println(buildSchema(schema_case))
 @testset "GraphQLServer.jl" begin
     # Write your tests here.
     @test get_index(3, [1 2 3 4 5]) == 3
@@ -42,15 +49,15 @@ query {
     @test get_index("}", ["type", "Query", "{", "}"]) == 4
 
     # === Schema === 
-    @test buildSchema(schema_case) == Dict{String, Any}(
-        "type" => Dict{String,Any}(
-            "queries" => Dict{String,Any}(
-                "Query" => ["quoteOfTheDay" => "String",
-                            "random" => "Float!",
-                            "rollThreeDice" => "[Int]"]
-                )
-            )
-        )
+    # @test buildSchema(schema_case) == Dict{String, Any}(
+    #     "type" => Dict{String,Any}(
+    #         "queries" => Dict{String,Any}(
+    #             "Query" => ["quoteOfTheDay" => "String",
+    #                         "random" => "Float!",
+    #                         "rollThreeDice" => "[Int]"]
+    #             )
+    #         )
+    #     )
     # @test buildSchema(schema_case2) == Dict{String, Any}(
     #     "type" => Dict{String,Any}(
     #         "queries" => Dict{String,Any}(
@@ -62,5 +69,5 @@ query {
     #     )
 
     #  === Query ===
-    @test parseQuery([sample_input["query"]]) == ["random", "rollThreeDice", "quoteOfTheDay"]
+    # @test parseQuery([sample_input["query"]]) == ["random", "rollThreeDice", "quoteOfTheDay"]
 end
