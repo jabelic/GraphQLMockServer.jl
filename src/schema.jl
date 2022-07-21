@@ -20,8 +20,10 @@ export buildSchema, get_field_type
             _row = length(row) > 1 && SubString(row, 1, 1) == ";" ? row[2:end] : row
             println("_row:", _row)
             tmp = ""
-            for char in _row
+            field = ""
+            for (index, char) in enumerate(_row)
                 if occursin(char, "{") || char == "{"
+                    # スキーマ定義で型と{の間にspaceがなければここへくる
                     if occursin(tmp, "Query") || tmp == "Query"
                         kinds_of_type = "Query"
                         AST["root"]["type"] = Dict{Any, Any}("Query"=>nothing)
@@ -32,26 +34,49 @@ export buildSchema, get_field_type
                 elseif occursin(char, "}") || char == "}"
                     # ネストしている場合は要注意
                 elseif occursin(char, "\$")|| char == "\$"
-                elseif occursin(char, "@") || char == "@"
+                # elseif occursin(char, "@") || char == "@"
                 elseif occursin(char, ":") || char == ":"
+                    # パス
                 elseif occursin(char, "!") || char == "!"
-                elseif occursin(char, "[") || char == "["
+                    # println("LLLLLLLLLLLLLLLLLLL")
+                    # represent it Required field
+                    if occursin(tmp, "String") || tmp == "String"
+                        AST["root"]["type"][kinds_of_type][field] = "String!"
+                    elseif occursin(tmp, "ID") || tmp == "ID"
+                        AST["root"]["type"][kinds_of_type][field] = "ID!"
+                    elseif occursin(tmp, "Boolean") || tmp == "Boolean"
+                        AST["root"]["type"][kinds_of_type][field] = "Boolean!"
+                    elseif occursin(tmp, "Float") || tmp == "Float"
+                        AST["root"]["type"][kinds_of_type][field] = "Float!"
+                    elseif occursin(tmp, "Int") || tmp == "Int"
+                        AST["root"]["type"][kinds_of_type][field] = "Int!"
+                    end
+                    tmp = ""
+
+                # elseif occursin(char, "[") || char == "["
+                # ]だけ見ていれば配列型であることは把握できる？
+
                 elseif occursin(char, "]") || char == "]"
+                    if occursin(tmp, "[Int") || tmp == "[Int"
+                        AST["root"]["type"][kinds_of_type][field] = "[Int]"
+                    elseif occursin(tmp, "[String") || tmp == "[String"
+                        AST["root"]["type"][kinds_of_type][field] = "[String]"
+                    elseif occursin(tmp, "[Boolean") || tmp == "[Boolean"
+                        AST["root"]["type"][kinds_of_type][field] = "[Boolean]"
+                    elseif occursin(tmp, "[Float") || tmp == "[Float"
+                        AST["root"]["type"][kinds_of_type][field] = "[Float]"
+                    elseif occursin(tmp, "[Id") || tmp == "[ID"
+                        AST["root"]["type"][kinds_of_type][field] = "[ID]"
+                    end
+
                 elseif occursin(char, ";") || char == ";"
                     # 一区切り
                     if occursin(tmp, "type") || tmp == "type"
-                        # type Query, type Mutation, type Studentの Query, Mutationなどをもつ
-                        kinds_of_type = "" 
                         AST["root"] = Dict{Any, Any}("type"=>nothing)
                     elseif occursin(tmp, "Query") || tmp == "Query"
-                        println("ppppppppppppppppppppppppppppp")
+                        # スキーマ定義で型と{の間にspaceがあればここへくる
                         kinds_of_type = "Query"
                         AST["root"]["type"] = Dict{Any, Any}("Query"=>nothing)
-                    elseif occursin(tmp, "String") || tmp == "String"
-                    elseif occursin(tmp, "ID") || tmp == "ID"
-                    elseif occursin(tmp, "Boolean") || tmp == "Boolean"
-                    elseif occursin(tmp, "Float") || tmp == "Float"
-                    elseif occursin(tmp, "Int") || tmp == "Int"
                     elseif length(kinds_of_type) > 1
                         # println("kinds_of_type:::::", kinds_of_type)
                         # println(AST["root"]["type"])
@@ -62,9 +87,37 @@ export buildSchema, get_field_type
                             else
                                 AST["root"]["type"]["Query"] = Dict{Any, Any}(tmp=>nothing)
                             end
+                            field = tmp
                         end
                     end
                     tmp = ""
+
+                elseif index == length(_row)
+                    if occursin(tmp, "String") || tmp == "String"
+                        AST["root"]["type"][kinds_of_type][field] = "String"
+                    # elseif occursin(tmp, "String!") || tmp == "String!"
+                    #     AST["root"]["type"][kinds_of_type][field] = "String!"
+                    elseif occursin(tmp, "ID") || tmp == "ID"
+                        AST["root"]["type"][kinds_of_type][field] = "ID"
+                    # elseif occursin(tmp, "ID!") || tmp == "ID!"
+                    #     AST["root"]["type"][kinds_of_type][field] = "ID!"
+                    elseif occursin(tmp, "Boolean") || tmp == "Boolean"
+                        AST["root"]["type"][kinds_of_type][field] = "Boolean"
+                    # elseif occursin(tmp, "Boolean!") || tmp == "Boolean!"
+                    #     AST["root"]["type"][kinds_of_type][field] = "Boolean!"
+                    elseif occursin(tmp, "Float") || tmp == "Float"
+                        AST["root"]["type"][kinds_of_type][field] = "Float"
+                    # elseif occursin(tmp, "Float!") || tmp == "Float!"
+                    #     AST["root"]["type"][kinds_of_type][field] = "Float!"
+                    elseif occursin(tmp, "Int") || tmp == "Int"
+                        AST["root"]["type"][kinds_of_type][field] = "Int"
+                    # elseif occursin(tmp, "Int!") || tmp == "Int!"
+                    #     AST["root"]["type"][kinds_of_type][field] = "Int!"
+                    # elseif occursin(tmp, "[Int]") || tmp == "[Int]"
+                    #     AST["root"]["type"][kinds_of_type][field] = "[Int]"
+                    else
+                        # custom type
+                    end
                 else
                     tmp *= char
                 end
