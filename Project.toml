@@ -3,6 +3,10 @@ uuid = "d58e7ffd-bc40-4adf-bb9e-9723c96b3ea1"
 authors = ["Jabelic"]
 version = "0.1.0"
 
+[deps]
+Genie = "c43c736e-a2d1-11e8-161f-af95117fbd1e"
+Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+
 [compat]
 julia = "1.5"
 

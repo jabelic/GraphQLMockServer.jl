@@ -1,6 +1,6 @@
 module Resolver
-    using Random
-    export resolveOptions
+    # using Random
+    export resolveOptions, get_index
 
     # 純粋関数
     function get_index(target, ary)
@@ -12,13 +12,13 @@ module Resolver
     end
 
     function get_method_name(func, func_names)
-        println("get_method_name:: ")
+        # println("get_method_name:: ")
         func_name = string(Symbol(func))
-        println(func_name in func_names, func_name)
+        # println(func_name in func_names, func_name)
         if func_name in func_names
             index = get_index(func_name, func_names)
-            println(index)
-            println("================")
+            # println(index)
+            # println("================")
             return Dict("index"=>index, "func_name"=>func_name)
         end
     end
@@ -49,10 +49,10 @@ module Resolver
     end
 
     function is_type_valid(from_schema, from_resolver_response::String)
-        println("is_type_valid::")
-        println(from_schema[1])
-        println(from_resolver_response)
-        println("==================")
+        # println("is_type_valid::")
+        # println(from_schema[1])
+        # println(from_resolver_response)
+        # println("==================")
         if from_resolver_response in from_schema || length(findall(from_schema[1], from_resolver_response))>0
             return true
         end
@@ -86,7 +86,7 @@ module Resolver
                 println("Error: ", func)
             end
         end
-        println("resolve::", results)
+        # println("resolve::", results)
         results
     end
 

@@ -1,8 +1,12 @@
 module Schema
 export buildSchema, get_field_type
 
+    reserved_char = ["{", "}", "$", "@", ":", "!"]
+    # 行で分ける
+    # 空白を詰めて1文字ずつ解析
+    # 特殊文字と単語をnodeとして, ASTを構築
     function parse(arg::String)
-        nodes = split(arg)
+        nodes = split(arg) # FIXME: split の方法を変える. tokenを定義する
         ast = Dict{Any, Any}()
         isType = false
         modeSchema = false # {}の内部
@@ -43,7 +47,7 @@ export buildSchema, get_field_type
         return ast
     end
     function buildSchema(schema::String)
-        println("schema", schema)
+        # println("schema", schema)
         AST = parse(schema)
         return AST
     end

@@ -11,3 +11,7 @@
 # Run sample server
 
 `$ julia -JSysimage.so sample.jl -t auto`
+
+## test
+
+`$ julia -JSysimage.so --project -e 'using Pkg;Pkg.test()'`
