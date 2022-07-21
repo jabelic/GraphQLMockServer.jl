@@ -30,11 +30,11 @@ export buildSchema, get_field_type
                         # typeの後ろ, {の前に入る. tmpを参照のこと。
                     end
                 elseif occursin(char, "}") || char == "}"
-                # ネストしている場合は要注意
+                    # ネストしている場合は要注意
                 elseif occursin(char, "\$")|| char == "\$"
                 elseif occursin(char, "@") || char == "@"
                 elseif occursin(char, ":") || char == ":"
-                elseif occursin(char, "!") ||
+                elseif occursin(char, "!") || char == "!"
                 elseif occursin(char, "[") || char == "["
                 elseif occursin(char, "]") || char == "]"
                 elseif occursin(char, ";") || char == ";"
@@ -49,9 +49,9 @@ export buildSchema, get_field_type
                         AST["root"]["type"] = Dict{Any, Any}("Query"=>nothing)
                     elseif occursin(tmp, "String") || tmp == "String"
                     elseif occursin(tmp, "ID") || tmp == "ID"
-                    elseif occursin(tmp, "Boolean") || "Boolean"
-                    elseif occursin(tmp, "Float") || "Float"
-                    elseif occursin(tmp, "Int") || "Int"
+                    elseif occursin(tmp, "Boolean") || tmp == "Boolean"
+                    elseif occursin(tmp, "Float") || tmp == "Float"
+                    elseif occursin(tmp, "Int") || tmp == "Int"
                     elseif length(kinds_of_type) > 1
                         # println("kinds_of_type:::::", kinds_of_type)
                         # println(AST["root"]["type"])
