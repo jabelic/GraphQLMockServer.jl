@@ -4,8 +4,8 @@ using .GraphQLServer: graphqlHTTP, buildSchema, graphqlApp, listen
 using Genie
 include("../src/query.jl")
 using .Query: parseQuery
-# include("../src/schema.jl")
-# using .Schema: buildSchema, get_field_type
+include("../src/schema.jl")
+using .Schema: get_AST
 include("../src/resolver.jl")
 using .Resolver: resolveOptions, get_index
     
@@ -17,19 +17,32 @@ schema_case = """
   }
 """
 schema_case2 = """
-  type Author {
+  type Query {
     id: ID!
     firstName: String
     lastName: String
-    love{
-        food
-        color
-    }
-    hoge(id:ID!): {
-        name
-    }
+    love: Love!
+    sports: [Sports]
   }
 """
+
+# type Author {
+schema_case3 = """
+  type Query {
+    id: ID!
+    firstName: String
+    lastName: String
+    love: Loves!
+    sports: [Sports]
+  }
+  type Loves {
+      name: String
+  }
+  type Sports{
+      experienced: String
+  }
+"""
+
 
 const sample_input = Dict("query"=>"""
 query {
@@ -39,7 +52,7 @@ query {
 }
 """)
 
-println(buildSchema(schema_case))
+println("DDDDDDDDDDDD][][]",get_AST(schema_case3))
 @testset "GraphQLServer.jl" begin
     # Write your tests here.
     @test get_index(3, [1 2 3 4 5]) == 3
@@ -49,6 +62,44 @@ println(buildSchema(schema_case))
     @test get_index("}", ["type", "Query", "{", "}"]) == 4
 
     # === Schema === 
+    @test get_AST(schema_case) == Dict{Any,Any}(
+        "root" => Dict{Any,Any}(
+            "type" => Dict{Any,Any}(
+                "Query" => Dict{Any,Any}(
+                    "random" => "Float!","quoteOfTheDay" => "String","rollThreeDice" => "[Int]"
+                    )
+                )
+            )
+        )
+    @test get_AST(schema_case2) == Dict{Any,Any}(
+        "root" => Dict{Any,Any}(
+            "type" => Dict{Any,Any}(
+                "Query" => Dict{Any,Any}(
+                    "sports" => "[Sports]",
+                    "id" => "ID!",
+                    "lastName" => "String",
+                    "firstName" => "String",
+                    "love" => "Love!"
+                    )
+                )
+            )
+        )
+    # @test get_AST(schema_case3) == Dict{Any,Any}(
+    #     "root" => Dict{Any,Any}(
+    #         "type" => Dict{Any,Any}(
+    #             "Query" => Dict{Any,Any}(
+    #                 "id" => "ID!",
+    #                 "lastName" => "String",
+    #                 "firstName" => "String",
+    #                 "love" => "Loves!",
+    #                 "sports" => "[Sports]"
+    #                 )
+    #             ),
+    #             "Loves!"=>nothing,
+    #             "Sports"=>nothing
+    #         )
+    #     )
+
     # @test buildSchema(schema_case) == Dict{String, Any}(
     #     "type" => Dict{String,Any}(
     #         "queries" => Dict{String,Any}(

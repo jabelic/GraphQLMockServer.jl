@@ -1,17 +1,18 @@
 module Schema
-export buildSchema, get_field_type
+export buildSchema, get_field_type, get_AST
 
     reserved_char = ["{", "}", "\$", "@", ":", "!"]
     
     function get_AST(arg)
         lines = split(arg, r"\n")
-        println("lines", lines)
+        # println("lines", lines)
         AST::Any = Dict{Any, Any}("root"=>nothing)
         
         """Query, Mutation, カスタム型(Student, Book, getStudents, getFolders, getIds...)
         typeの後に続くキーワード。
         """
         kinds_of_type::Any = ""
+        kinds_of_nested_field::Array{Any, 1} = [] # ネストモード. これ配列で持てばいいね. stackだね
 
         for row in lines
             row = replace(row, r"\s+"=>";")
@@ -27,7 +28,24 @@ export buildSchema, get_field_type
                     if occursin(tmp, "Query") || tmp == "Query"
                         kinds_of_type = "Query"
                         AST["root"]["type"] = Dict{Any, Any}("Query"=>nothing)
+                    elseif length(kinds_of_type) > 0
+                        # すでにtypeがある場合(Query, Mutation, カスタムtypeなど)
+                        # -> ネストしたfield
+                        # kinds_of_nested_field = tmp
+                        append!(kinds_of_nested_field, `$tmp`)
+                        # println(tmp)
+                        if AST["root"]["type"][kinds_of_type] != nothing
+                            AST["root"]["type"][kinds_of_type] = merge(AST["root"]["type"][kinds_of_type], Dict(tmp=>nothing)) 
+                        end
+                        tmp = ""
                     else
+                        kinds_of_type = tmp
+                        if AST["root"]["type"] != nothing
+                            AST["root"]["type"] = merge(AST["root"]["type"], Dict{Any, Any}(kinds_of_type=>nothing))
+                        else
+                            AST["root"]["type"] = Dict{Any, Any}(kinds_of_type=>nothing)
+                        end
+                            
                         # kinds_of_typeに入る文字列をここでゲットする　
                         # typeの後ろ, {の前に入る. tmpを参照のこと。
                     end
@@ -50,6 +68,8 @@ export buildSchema, get_field_type
                         AST["root"]["type"][kinds_of_type][field] = "Float!"
                     elseif occursin(tmp, "Int") || tmp == "Int"
                         AST["root"]["type"][kinds_of_type][field] = "Int!"
+                    else
+                        AST["root"]["type"][kinds_of_type][field] = tmp*"!"
                     end
                     tmp = ""
 
@@ -67,12 +87,20 @@ export buildSchema, get_field_type
                         AST["root"]["type"][kinds_of_type][field] = "[Float]"
                     elseif occursin(tmp, "[Id") || tmp == "[ID"
                         AST["root"]["type"][kinds_of_type][field] = "[ID]"
+                    else
+                        AST["root"]["type"][kinds_of_type][field] = tmp*"]"
                     end
-
+                    tmp = ""
                 elseif occursin(char, ";") || char == ";"
                     # 一区切り
                     if occursin(tmp, "type") || tmp == "type"
-                        AST["root"] = Dict{Any, Any}("type"=>nothing)
+                        # println(haskey(AST, "root"))
+                        # println(AST["root"])
+                        # println(AST["root"]["type"])
+                        # println(haskey(AST["root"], "type"))
+                        if  haskey(AST, "root") && (AST["root"] == nothing || !haskey(AST["root"], "type"))
+                            AST["root"] = Dict{Any, Any}("type"=>nothing)
+                        end
                     elseif occursin(tmp, "Query") || tmp == "Query"
                         # スキーマ定義で型と{の間にspaceがあればここへくる
                         kinds_of_type = "Query"
@@ -89,10 +117,15 @@ export buildSchema, get_field_type
                             end
                             field = tmp
                         end
+                    else
+                        println("]]]]]]]]]]]]]]]]]]]]]]]]]", tmp)
+                        if AST["root"]["type"] != nothing && haskey(AST["root"]["type"], tmp)
+                        end
                     end
                     tmp = ""
 
                 elseif index == length(_row)
+                    tmp *= char # forループ最後なので, 先に文字を足してから, 各判定をする
                     if occursin(tmp, "String") || tmp == "String"
                         AST["root"]["type"][kinds_of_type][field] = "String"
                     # elseif occursin(tmp, "String!") || tmp == "String!"
@@ -115,17 +148,23 @@ export buildSchema, get_field_type
                     #     AST["root"]["type"][kinds_of_type][field] = "Int!"
                     # elseif occursin(tmp, "[Int]") || tmp == "[Int]"
                     #     AST["root"]["type"][kinds_of_type][field] = "[Int]"
+                    elseif length(kinds_of_nested_field) > 0
+                        if AST["root"]["type"][kinds_of_type][kinds_of_nested_field[end]] != nothing
+                            AST["root"]["type"][kinds_of_type][kinds_of_nested_field[end]] = merge(AST["root"]["type"][kinds_of_type][kinds_of_nested_field[end]], Dict(tmp=>nothing))
+                        else
+                            AST["root"]["type"][kinds_of_type][kinds_of_nested_field[end]] = Dict(tmp => nothing)
+                        end
                     else
                         # custom type
                     end
+                    tmp = ""
                 else
                     tmp *= char
                 end
-                println(tmp)
+                # println(tmp)
             end
         end
-        println("AST", AST)
-        println()
+        AST
     end
 
     # 行で分ける
