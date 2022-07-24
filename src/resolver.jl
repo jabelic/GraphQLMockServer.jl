@@ -22,29 +22,41 @@ module Resolver
     end
     
     function get_type_info(arg::String)
-        println(arg)
+        # println(arg)
         is_ary_exp = r"\[(.+)\]"
         is_required_exp = r"(.+)!$"
         # https://qiita.com/NagaokaKenichi/items/d341dc092012e05d6606
         graphql_reserved_types = ["Int", "Boolean", "String", "Float", "ID"]
         match_to_ary_type = match(is_ary_exp, arg)
         match_to_required_type = match(is_required_exp, arg)
-        println(match_to_ary_type, match_to_required_type)
+        # println(match_to_ary_type, match_to_required_type)
         # 本当はここもparse必要
         if match_to_ary_type != nothing
-            # Array
-            types = match_to_ary_type[1]
-            tmp = []
-            append!(tmp, [types])
-            return tmp
+            if arg == "ID" || arg == "ID!" || arg == "[ID]" || arg == "[ID!]"
+                return ["Int", "Int32", "Int64", "Nothing"]
+            else
+                # Array
+                types = match_to_ary_type[1]
+                tmp = []
+                append!(tmp, [types])
+                return tmp
+            end
             # return ["Array{$types, Any}"]
         elseif match_to_required_type != nothing
-            types = match_to_required_type[1]
-            tmp = []
-            append!(tmp, [types])
-            return tmp
+            if arg == "ID" || arg == "ID!" || arg == "[ID]" || arg == "[ID!]"
+                return ["Int", "Int32", "Int64", "Nothing"]
+            else
+                types = match_to_required_type[1]
+                tmp = []
+                append!(tmp, [types])
+                return tmp
+            end
         elseif arg in graphql_reserved_types
-            return [arg, "Nothing"]
+            if arg == "ID" || arg == "ID!" || arg == "[ID]" || arg == "[ID!]"
+                return ["Int", "Int32", "Int64", "Nothing"]
+            else
+                return [arg, "Nothing"]
+            end
         else
             tmp = []
             append!(tmp, [arg])
@@ -52,14 +64,42 @@ module Resolver
         end
     end
 
-    function is_type_valid(from_schema, from_resolver_response::String)
+    function is_type_valid(from_schema_type, from_resolver_response_type::String, res, schema)
+        # from_schema_type: ["Loves"]
         # println("is_type_valid::")
-        # println(from_schema[1])
-        # println(from_resolver_response)
+        # println(from_schema_type[1])
+        # println(from_resolver_response_type)
         # println("==================")
-        # println(from_resolver_response in from_schema , length(findall(from_schema[1], from_resolver_response))>0)
-        if from_resolver_response in from_schema || length(findall(from_schema[1], from_resolver_response))>0
+        # println(from_resolver_response_type in from_schema_type , length(findall(from_schema_type[1], from_resolver_response_type))>0)
+        if from_resolver_response_type in from_schema_type || length(findall(from_schema_type[1], from_resolver_response_type))>0
             return true
+        end
+        types = schema["root"]["type"]
+        # println("response: ", res) # Dict("name" => "john")
+        # println("types: ",types) # Dict{Any,Any}("Query" => Dict{Any,Any}("id" => "ID!","love" => "Loves!"),"Loves" => Dict{Any,Any}("name" => "String"))
+        # println("keys of types",keys(types))# Any["Query", "Loves"]
+        # println("from_schema_type: ", from_schema_type) # Any["Loves"]
+        # println("from_resolver_response_type: ", from_resolver_response_type) #Dict{String,String}
+        for type in keys(types)
+            if type!= "Query" && type in from_schema_type
+                # println(type!= "Query" , type in from_schema_type)
+                # println("type in loop", type) # Loves
+                # println("types[type]: ", types[type]) # Dict{Any,Any}("name" => "String")
+                field_in_schema = types[type]
+                _key_names = [it for it in keys(field_in_schema)] # name
+                _val_types = [it for it in values(field_in_schema)] # String/
+                # println("::::::",_key_names, _val_types) # ["name"]["String"]
+                # println(_key_names[1]) # name
+                # println(typeof(_key_names[1])) #String
+                # println(" _val_types[1]", _val_types[1], "   ", typeof(_val_types[1]))
+                # println(res[_key_names[1]]) #john
+                # println(typeof(res[_key_names[1]]))  #String
+                # println("condition if:", "$(typeof(res[_key_names[1]]))" == _val_types[1])
+                if "$(typeof(res[_key_names[1]]))" == _val_types[1]
+                    return true
+                end
+                # return key.second
+            end
         end
     end
     
@@ -109,9 +149,10 @@ module Resolver
                         res = func()
                         expected_type::String = fieldtype
                         # println("expected_type::::::::", expected_type)
-                        current_primitive_gql_type = get_type_info(expected_type)
-                        # println(current_primitive_gql_type)
-                        if is_type_valid(current_primitive_gql_type, "$(typeof(res))")
+                        current_resolver_return_type = get_type_info(expected_type)
+                        println("current_resolver_return_type",current_resolver_return_type)
+                        println("]]]]]]]]]]response:",res)
+                        if is_type_valid(current_resolver_return_type, "$(typeof(res))", res, schema)
                             results[function_name] = res
                             println("response:",res)
                         end
@@ -120,7 +161,7 @@ module Resolver
                     println("ERROR")
                 end
             end
-            println("999")
+            # println("999")
         end
         println(results)
         return results
@@ -136,8 +177,8 @@ module Resolver
         #             if function_name in queries
         #                 res = func()
         #                 expected_type::String = field_type[corresponding_index_in_queries].second
-        #                 current_primitive_gql_type = get_type_info(expected_type)
-        #                 if is_type_valid(current_primitive_gql_type, "$(typeof(res))")
+        #                 current_resolver_return_type = get_type_info(expected_type)
+        #                 if is_type_valid(current_resolver_return_type, "$(typeof(res))")
         #                     results[function_name] = res
         #                 end
         #             end
