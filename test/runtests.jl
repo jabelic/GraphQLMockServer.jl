@@ -38,7 +38,7 @@ schema_case3 = """
   type Loves {
       name: String
   }
-  type Sports{
+  type Sports {
       experienced: String
   }
 """
@@ -51,8 +51,6 @@ query {
     quoteOfTheDay
 }
 """)
-
-println("DDDDDDDDDDDD][][]",get_AST(schema_case3))
 @testset "GraphQLServer.jl" begin
     # Write your tests here.
     @test get_index(3, [1 2 3 4 5]) == 3
@@ -84,41 +82,26 @@ println("DDDDDDDDDDDD][][]",get_AST(schema_case3))
                 )
             )
         )
-    # @test get_AST(schema_case3) == Dict{Any,Any}(
-    #     "root" => Dict{Any,Any}(
-    #         "type" => Dict{Any,Any}(
-    #             "Query" => Dict{Any,Any}(
-    #                 "id" => "ID!",
-    #                 "lastName" => "String",
-    #                 "firstName" => "String",
-    #                 "love" => "Loves!",
-    #                 "sports" => "[Sports]"
-    #                 )
-    #             ),
-    #             "Loves!"=>nothing,
-    #             "Sports"=>nothing
-    #         )
-    #     )
-
-    # @test buildSchema(schema_case) == Dict{String, Any}(
-    #     "type" => Dict{String,Any}(
-    #         "queries" => Dict{String,Any}(
-    #             "Query" => ["quoteOfTheDay" => "String",
-    #                         "random" => "Float!",
-    #                         "rollThreeDice" => "[Int]"]
-    #             )
-    #         )
-    #     )
-    # @test buildSchema(schema_case2) == Dict{String, Any}(
-    #     "type" => Dict{String,Any}(
-    #         "queries" => Dict{String,Any}(
-    #             "Author" => ["id" => "ID",
-    #                         "firstName" => "String",
-    #                         "lastName" => "String"]
-    #             )
-    #         )
-    #     )
-
+    @test get_AST(schema_case3) == Dict{Any,Any}(
+            "root" => Dict{Any,Any}(
+                "type" => Dict{Any,Any}(
+                    "Query" => Dict{Any,Any}(
+                        "sports" => "[Sports]",
+                        "id" => "ID!",
+                        "lastName" => "String",
+                        "firstName" => "String",
+                        "love" => "Loves!"
+                        ),
+                    "Loves" => Dict{Any,Any}(
+                        "name" => "String"
+                        ),
+                    "Sports" => Dict{Any,Any}(
+                        "experienced" => "String"
+                        )
+                    )
+                )
+            )
     #  === Query ===
     # @test parseQuery([sample_input["query"]]) == ["random", "rollThreeDice", "quoteOfTheDay"]
 end
+

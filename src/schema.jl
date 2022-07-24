@@ -25,19 +25,19 @@ export buildSchema, get_field_type, get_AST
             for (index, char) in enumerate(_row)
                 if occursin(char, "{") || char == "{"
                     # スキーマ定義で型と{の間にspaceがなければここへくる
-                    if occursin(tmp, "Query") || tmp == "Query"
+                    if occursin("Query", tmp) || tmp == "Query"
                         kinds_of_type = "Query"
                         AST["root"]["type"] = Dict{Any, Any}("Query"=>nothing)
                     elseif length(kinds_of_type) > 0
                         # すでにtypeがある場合(Query, Mutation, カスタムtypeなど)
                         # -> ネストしたfield
-                        # kinds_of_nested_field = tmp
                         append!(kinds_of_nested_field, `$tmp`)
                         # println(tmp)
                         if AST["root"]["type"][kinds_of_type] != nothing
                             AST["root"]["type"][kinds_of_type] = merge(AST["root"]["type"][kinds_of_type], Dict(tmp=>nothing)) 
+                        elseif haskey(AST["root"]["type"],kinds_of_type) && length(tmp) > 0
+                            AST["root"]["type"][kinds_of_type] = Dict(tmp=>nothing)
                         end
-                        tmp = ""
                     else
                         kinds_of_type = tmp
                         if AST["root"]["type"] != nothing
@@ -49,8 +49,10 @@ export buildSchema, get_field_type, get_AST
                         # kinds_of_typeに入る文字列をここでゲットする　
                         # typeの後ろ, {の前に入る. tmpを参照のこと。
                     end
+                    tmp = ""
                 elseif occursin(char, "}") || char == "}"
                     # ネストしている場合は要注意
+                    kinds_of_type = "" #ネストしてない時
                 elseif occursin(char, "\$")|| char == "\$"
                 # elseif occursin(char, "@") || char == "@"
                 elseif occursin(char, ":") || char == ":"
@@ -100,27 +102,38 @@ export buildSchema, get_field_type, get_AST
                         # println(haskey(AST["root"], "type"))
                         if  haskey(AST, "root") && (AST["root"] == nothing || !haskey(AST["root"], "type"))
                             AST["root"] = Dict{Any, Any}("type"=>nothing)
+                        else
+                            # 新しいtype
+                            kinds_of_type = ""
                         end
                     elseif occursin(tmp, "Query") || tmp == "Query"
                         # スキーマ定義で型と{の間にspaceがあればここへくる
                         kinds_of_type = "Query"
                         AST["root"]["type"] = Dict{Any, Any}("Query"=>nothing)
-                    elseif length(kinds_of_type) > 1
-                        # println("kinds_of_type:::::", kinds_of_type)
-                        # println(AST["root"]["type"])
-                        # println(haskey(AST["root"]["type"], "Query"))
-                        if haskey(AST["root"]["type"], "Query")
+                    elseif length(kinds_of_type) > 0
+                        if haskey(AST["root"]["type"], "Query") && kinds_of_type == "Query"
                             if AST["root"]["type"]["Query"]!=nothing
                                 AST["root"]["type"]["Query"] = merge(AST["root"]["type"]["Query"], Dict{Any, Any}(tmp=>nothing))
                             else
                                 AST["root"]["type"]["Query"] = Dict{Any, Any}(tmp=>nothing)
                             end
                             field = tmp
+                        else
+                            if AST["root"]["type"][kinds_of_type]!=nothing
+                                AST["root"]["type"][kinds_of_type] = merge(AST["root"]["type"][kinds_of_type], Dict{Any, Any}(tmp=>nothing))
+                            else
+                                AST["root"]["type"][kinds_of_type] = Dict{Any, Any}(tmp=>nothing)
+                            end
+                            field = tmp
                         end
                     else
-                        println("]]]]]]]]]]]]]]]]]]]]]]]]]", tmp)
-                        if AST["root"]["type"] != nothing && haskey(AST["root"]["type"], tmp)
+                        kinds_of_type = tmp # custom type
+                        if AST["root"]["type"] != nothing 
+                            AST["root"]["type"] = merge(AST["root"]["type"], Dict{Any, Any}(kinds_of_type=>nothing))
+                        elseif AST["root"]["type"] == nothing
+                            AST["root"]["type"] = Dict{Any, Any}(kinds_of_type=>nothing)
                         end
+                        println(AST["root"]["type"] != nothing , tmp, AST)
                     end
                     tmp = ""
 
@@ -161,7 +174,6 @@ export buildSchema, get_field_type, get_AST
                 else
                     tmp *= char
                 end
-                # println(tmp)
             end
         end
         AST
