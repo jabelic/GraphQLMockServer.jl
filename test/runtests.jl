@@ -26,8 +26,18 @@ schema_case2 = """
   }
 """
 
-# type Author {
 schema_case3 = """
+type Query {
+    id: ID!
+    love: Loves!
+}
+type Loves {
+    name: String
+}
+"""
+
+# type Author {
+schema_case4 = """
   type Query {
     id: ID!
     firstName: String
@@ -82,7 +92,21 @@ query {
                 )
             )
         )
+        
     @test get_AST(schema_case3) == Dict{Any,Any}(
+            "root" => Dict{Any,Any}(
+                "type" => Dict{Any,Any}(
+                    "Query" => Dict{Any,Any}(
+                        "id" => "ID!",
+                        "love" => "Loves!"
+                        ),
+                    "Loves" => Dict{Any,Any}(
+                        "name" => "String"
+                        ),
+                    )
+                )
+            )
+    @test get_AST(schema_case4) == Dict{Any,Any}(
             "root" => Dict{Any,Any}(
                 "type" => Dict{Any,Any}(
                     "Query" => Dict{Any,Any}(

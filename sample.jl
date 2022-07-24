@@ -22,6 +22,14 @@ function rollDice(args)
     output
 end
 
+function id()
+    return 10
+end
+
+function love()
+    Dict("name"=>"john")
+end
+
 # Define Schema
 _schema = buildSchema("""
   type Query {
@@ -30,11 +38,22 @@ _schema = buildSchema("""
     rollThreeDice: [Int]
   }
 """);
+
+schema2 = buildSchema("""
+type Query {
+    id: ID!
+    love: Loves!
+}
+type Loves {
+    name: String
+}
+""");
+
 # rollDice(numDice: Int!, numSides: Int): [Int]
 
 input = Dict("endpoint"=>"/graphql", "schema"=>_schema, "resolver"=>[quoteOfTheDay, random, rollThreeDice])
 graphqlApp(input)
-input2 = Dict("endpoint"=>"/", "schema"=>_schema, "resolver"=>[quoteOfTheDay, random, rollThreeDice])
+input2 = Dict("endpoint"=>"/", "schema"=>schema2, "resolver"=>[id, love])
 graphqlApp(input2)
 
 listen()

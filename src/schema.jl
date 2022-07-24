@@ -19,7 +19,7 @@ export buildSchema, get_field_type, get_AST
             # ;type;Query{ のようになっている
             # 先頭の;を取り除く
             _row = length(row) > 1 && SubString(row, 1, 1) == ";" ? row[2:end] : row
-            println("_row:", _row)
+            # println("_row:", _row)
             tmp = ""
             field = ""
             for (index, char) in enumerate(_row)
@@ -133,7 +133,7 @@ export buildSchema, get_field_type, get_AST
                         elseif AST["root"]["type"] == nothing
                             AST["root"]["type"] = Dict{Any, Any}(kinds_of_type=>nothing)
                         end
-                        println(AST["root"]["type"] != nothing , tmp, AST)
+                        # println(AST["root"]["type"] != nothing , tmp, AST)
                     end
                     tmp = ""
 
@@ -182,57 +182,57 @@ export buildSchema, get_field_type, get_AST
     # 行で分ける
     # 空白を詰めて1文字ずつ解析
     # 特殊文字と単語をnodeとして, ASTを構築
-    function parse(arg::String)
-        get_AST(arg)# 新しく作るやつ
-
-        nodes = split(arg) # FIXME: split の方法を変える. tokenを定義する
-        ast = Dict{Any, Any}()
-        isType = false
-        modeSchema = false # {}の内部
-        fieldMode = false
-        typeMode = false
-        currentFieldName::String = ""
-        for node in nodes
-            if !modeSchema && node == "type"
-                isType = true
-                ast["type"] = nothing
-            elseif !modeSchema && node == "Query" && isType
-                isType = false
-                ast["type"] = Dict{String, Any}("queries"=>nothing)
-                ast["type"]["queries"] = Dict{String, Any}("Query"=>[])
-            # elseif Query以外のtypeの入力
-            elseif node == "{" && !modeSchema
-                modeSchema = true
-            elseif node == "}" && modeSchema
-                modeSchema = false
-            elseif modeSchema
-                if !fieldMode
-                    fieldMode = true
-                    currentFieldName = SubString(node, 1, length(node)-1)
+    # function parse(arg::String)
+    #     nodes = split(arg) # FIXME: split の方法を変える. tokenを定義する
+    #     ast = Dict{Any, Any}()
+    #     isType = false
+    #     modeSchema = false # {}の内部
+    #     fieldMode = false
+    #     typeMode = false
+    #     currentFieldName::String = ""
+    #     for node in nodes
+    #         if !modeSchema && node == "type"
+    #             isType = true
+    #             ast["type"] = nothing
+    #         elseif !modeSchema && node == "Query" && isType
+    #             isType = false
+    #             ast["type"] = Dict{String, Any}("queries"=>nothing)
+    #             ast["type"]["queries"] = Dict{String, Any}("Query"=>[])
+    #         # elseif Query以外のtypeの入力
+    #         elseif node == "{" && !modeSchema
+    #             modeSchema = true
+    #         elseif node == "}" && modeSchema
+    #             modeSchema = false
+    #         elseif modeSchema
+    #             if !fieldMode
+    #                 fieldMode = true
+    #                 currentFieldName = SubString(node, 1, length(node)-1)
                     
-                    # ERROR handling
-                    if length(currentFieldName) == 0
-                        println("AST Error")
-                        exit()
-                    end
+    #                 # ERROR handling
+    #                 if length(currentFieldName) == 0
+    #                     println("AST Error")
+    #                     exit()
+    #                 end
                     
-                elseif fieldMode
-                    append!(ast["type"]["queries"]["Query"], Dict(currentFieldName=>node))
-                    currentFieldName = ""
-                    fieldMode = false
-                end
-            end
-        end
-        return ast
-    end
+    #             elseif fieldMode
+    #                 append!(ast["type"]["queries"]["Query"], Dict(currentFieldName=>node))
+    #                 currentFieldName = ""
+    #                 fieldMode = false
+    #             end
+    #         end
+    #     end
+    #     return ast
+    # end
     function buildSchema(schema::String)
         # println("schema", schema)
-        AST = parse(schema)
+        # AST = parse(schema)
+        AST = get_AST(schema)
         return AST
     end
 
-    function get_field_type(arg::Dict)
-        return haskey(arg["type"]["queries"], "Query") ?  arg["type"]["queries"]["Query"] : nothing
+    function get_field_type(arg::Any)
+        # return haskey(arg["type"]["queries"], "Query") ?  arg["type"]["queries"]["Query"] : nothing
+        return haskey(arg["root"]["type"], "Query") ?  arg["root"]["type"]["Query"] : nothing
     end
 end
 # type Query {
