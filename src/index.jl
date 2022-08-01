@@ -43,10 +43,10 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
 
 
     function parseInputs(arg::Dict)
-        # query = haskey(arg, "query") ? [arg["query"]] : nothing
+        query = haskey(arg, "query") ? [arg["query"]] : nothing
         # variables = haskey(arg, "variables") ? [arg["variables"]] : nothing
-        # queries = parseQuery(query)
-        # Dict("queries"=>queries)
+        queries = parseQuery(query)
+        Dict("queries"=>queries)
         # Dict(schema => arg["schema"],
         #     resolver => arg["resolver"]
         # )
@@ -58,7 +58,7 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
         try
             body::Dict{String, Any} = Requests.jsonpayload()
             println(body)
-            # parsed_inputs = parseInputs(body)
+            parsed_inputs = parseInputs(body)
             resolver = nothing
             schema = nothing
             if haskey(args, "resolver") 
@@ -68,10 +68,10 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
                 schema = args["schema"]
             end
             println(resolver, schema)
-            field_type = get_field_type(args["schema"])
+            field_type = get_field_type(args["schema"])# schemaを見ている
             println("field_type:", field_type)
-            
-            results = resolveOptions(resolver, schema, field_type)
+            println("parsed_inputs[queries]", parsed_inputs["queries"])
+            results = resolveOptions(resolver, schema, field_type, parsed_inputs["queries"])
             println("re:",results)
             Dict("data"=>results)
         catch

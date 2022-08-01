@@ -27,7 +27,7 @@ function id()
 end
 
 function love()
-    Dict("name"=>"john")
+    Dict("name"=>"john", "live"=>"tokyo")
 end
 
 # Define Schema
@@ -46,9 +46,9 @@ type Query {
 }
 type Loves {
     name: String
+    live: String
 }
 """);
-
 # rollDice(numDice: Int!, numSides: Int): [Int]
 
 input = Dict("endpoint"=>"/graphql", "schema"=>_schema, "resolver"=>[quoteOfTheDay, random, rollThreeDice])
