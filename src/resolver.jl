@@ -114,11 +114,11 @@ module Resolver
                         expected_type::String = fieldtype
                         # println("expected_type::::::::", expected_type)
                         current_resolver_return_type = get_type_info(expected_type)
-                        println("current_resolver_return_type",current_resolver_return_type)
-                        println("]]]]]]]]]]response:",res)
+                        # println("current_resolver_return_type",current_resolver_return_type)
+                        # println("]]]]]]]]]]response:",res)
                         if is_type_valid(current_resolver_return_type, "$(typeof(res))", res, schema)
                             results[function_name] = res
-                            println("response:",res)
+                            # println("response:",res)
                         end
                     end
                 catch

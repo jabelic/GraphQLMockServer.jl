@@ -17,4 +17,15 @@ export parseQuery
         end
         return queries
     end
+
+    # TODO: queryもASTを実装する
+    # root       ::= query | mutation | subscription
+    # query      ::= "{" field* "}"
+    # field      ::= field_expr ("{" field* "}")?
+    # field_expr ::= field_name | alias
+    # field_name ::= string
+    # alias      ::= alias_name ":" field_name
+    # alias_name ::= string
+    # argument   ::= "(" argument_name ":" argument_value ")" ","?
+
 end

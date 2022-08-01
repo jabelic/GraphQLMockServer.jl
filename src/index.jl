@@ -57,7 +57,7 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
         # argsはschema, resolverを持つ
         try
             body::Dict{String, Any} = Requests.jsonpayload()
-            println(body)
+            println("body: ",body)
             parsed_inputs = parseInputs(body)
             resolver = nothing
             schema = nothing
@@ -67,12 +67,12 @@ export graphqlHTTP, buildSchema, graphqlApp, listen
             if haskey(args, "schema") 
                 schema = args["schema"]
             end
-            println(resolver, schema)
+            # println(resolver, schema)
             field_type = get_field_type(args["schema"])# schemaを見ている
-            println("field_type:", field_type)
-            println("parsed_inputs[queries]", parsed_inputs["queries"])
+            # println("field_type:", field_type)
+            # println("parsed_inputs[queries]", parsed_inputs["queries"])
             results = resolveOptions(resolver, schema, field_type, parsed_inputs["queries"])
-            println("re:",results)
+            # println("re:",results)
             Dict("data"=>results)
         catch
             println("error")
